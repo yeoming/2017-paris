@@ -100,7 +100,7 @@ function formValidate() {
     alert('이름(입금자명)을 입력해주세요.');
     return false;
   }
-  var receive = document.form_info.receive.value.trim();
+  var receive = document.form_info.receive.value || document.querySelector('input[name="receive"]:checked').value;
   if (receive !== 'BY_SELF') {
     // need zipcode
     var zipcode = document.form_info.zipcode.value.trim();
@@ -151,7 +151,7 @@ function formPostData() {
   var uid = firebase.auth().currentUser.uid.trim();
   var phone = document.form_info.phone.value.trim();
   var name = document.form_info.name.value.trim();
-  var receive = document.form_info.receive.value.trim();
+  var receive = document.form_info.receive.value || document.querySelector('input[name="receive"]:checked').value;
   var address1 = document.form_info.address1.value.trim();
   var address2 = document.form_info.address2.value.trim();
   var zipcode = document.form_info.zipcode.value.trim();
