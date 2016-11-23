@@ -27,7 +27,7 @@ function signOut() {
 }
 
 function getTotalCost() {
-  var receive = document.form_info.receive.value;
+  var receive = document.form_info.receive.value || document.querySelector('input[name="receive"]:checked').value;
   var total = 0;
   var str = '';
   for (var type in PRODUCT_CONFIG) {
