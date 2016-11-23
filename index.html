@@ -11,7 +11,7 @@
   <!-- Kakao Preview -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="2017 Calendar"/>
-  <meta property="og:url" content="https://clarekang.github.io/for-sale-calendar"/>
+  <meta property="og:url" content="https://yeoming.github.io/2017-paris"/>
   <meta property="og:description" content="2017 Calendar"/>
   <meta property="og:image" content="./img/calendar_1.jpg" />
   <meta property="og:image:width" content="400" />
@@ -72,64 +72,12 @@
   <script src="./js/bootstrap.min.js"></script>
   <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
   <script src="./js/ie10-viewport-bug-workaround.js"></script>
-  <script src="http://dmaps.daum.net/map_js_init/postcode.v2.js"></script>
+  <script src="https://spi.maps.daum.net/imap/map_js_init/postcode.v2.js"></script>
 
   <script src="https://www.gstatic.com/firebasejs/3.6.0/firebase.js"></script>
+
+  <script src="./js/config.js"></script>
   <script>
-    // Initialize Firebase
-    var config = {
-      apiKey: "AIzaSyAu4DZFHelytM2mtLw1NX7apWahQfpWhAY",
-      authDomain: "for-sale-calendar.firebaseapp.com",
-      databaseURL: "https://for-sale-calendar.firebaseio.com",
-      storageBucket: "for-sale-calendar.appspot.com",
-      messagingSenderId: "503482988891"
-    };
-    firebase.initializeApp(config);
-
-    function numberFormatter(number) {
-      let returnNumber = number;
-      if (typeof returnNumber === 'string') {
-        returnNumber = parseFloat(returnNumber);
-      }
-      if (returnNumber === 0 || isNaN(returnNumber)) {
-        return 0;
-      }
-      const reg = /(^[+-]?\d+)(\d{3})/;
-      let n = `${returnNumber}`;
-      while (reg.test(n)) {
-        n = n.replace(reg, '$1' + ',' + '$2');
-      }
-      return n;
-    };
-
-    // Initialize form config
-    var RECEIVE_FIELD = {
-      BY_SELF: '직접수령',
-      BY_POST: '택배수령'
-    };
-
-    var PRODUCT_CONFIG = {
-      desk: {
-        label: '탁상용',
-        cost: 10000,
-      },
-      desk2: {
-        label: '탁상용2',
-        cost: 20000,
-      },
-      wall: {
-        label: '벽걸이',
-        cost: 20000,
-      },
-      postcard: {
-        label: '엽서',
-        cost: 30000,
-      },
-    };
-
-    var DELIVERY_FEE = 2500;
-    var DO_NOT_NEED_DELIVERY_FEE = 50000;
-
     $(document).ready(function() {
       var str = '';
       for (var type in PRODUCT_CONFIG) {
@@ -154,7 +102,7 @@
       }
       str += '<li class="list-group-item text-right">';
       str += '<input type="hidden" name="total" value="0" />';
-      str += '<strong id="TotalCost">총합: 0원 + 배송비('+ numberFormatter(DELIVERY_FEE) +'원) = '+ numberFormatter(DELIVERY_FEE) +'원</strong>';
+      str += '<strong id="TotalCost">총합: 0원</strong>';
       str += '</li>';
       $('.list-group').empty().append(str);
     });
@@ -170,16 +118,42 @@
 
     <div class="jumbotron" style="background-color: white;">
       <h2>2017 Paris Calendar</h2>
-      <p class="lead text-center" style="color: #777777; font-size: 18px;">따뜻한 프랑스의 감성을 드려요.</p>
+      <p class="lead text-center" style="color: #777777; font-size: 18px;"> 프랑스의 감성을 드려요.</p>
       <img src="./img/calendar_2.jpg" class="img-responsive" style="margin-bottom: 10px;">
-      <img src="./img/calendar_3.jpg" class="img-responsive" >
     </div>
 
     <div class="row">
       <div class="col-lg-12">
         <div class="panel panel-default">
           <div class="panel-heading">
-            <h3 class="panel-title">주문내역</h3>
+            <h3 class="panel-title">이전 주문 확인</h3>
+          </div>
+          <form class="form form-inline" name="form_signin" method="post" onsubmit="return false;">
+            <div class="panel-body">
+              <div class="form-group">
+                <label>핸드폰번호</label>
+                <input type="tel" name="phone" placeholder="핸드폰번호" class="form-control input-sm" required />
+              </div>
+              <div class="form-group">
+                <label>비밀번호</label>
+                <input type="password" name="password" placeholder="비밀번호" class="form-control input-sm" required />
+              </div>
+              <div class="form-group">
+                <button type="submit" class="btn btn-sm btn-primary" data-loading-text="Loading..." onclick="signIn()">확인</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <hr />
+
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">새로운 주문</h3>
           </div>
           <form class="form form-horizontal" name="form_info" method="post" onsubmit="return false;">
             <div class="panel-body">
@@ -187,32 +161,32 @@
                 개인정보는 본인 확인용도 및 실물 배송을 위해서만 사용됩니다. 배송 종료 시 파기됩니다.
               </div>
               <div class="form-group">
-                <label class="control-label col-lg-3">핸드폰번호</label>
+                <label class="control-label col-lg-3">핸드폰번호 *</label>
                 <div class="col-lg-9">
                   <input type="tel" name="phone" placeholder="숫자만 입력해주세요" class="form-control input-sm" required />
                 </div>
               </div>
               <div class="form-group">
-                <label class="control-label col-lg-3">비밀번호</label>
+                <label class="control-label col-lg-3">비밀번호 *</label>
                 <div class="col-lg-9">
-                  <input type="password" name="password" placeholder="비밀번호" class="form-control input-sm" required />
+                  <input type="password" name="password" placeholder="비밀번호(6자이상 입력해주세요)" class="form-control input-sm" required />
                 </div>
               </div>
               <div class="form-group">
-                <label class="control-label col-lg-3">비밀번호 확인</label>
+                <label class="control-label col-lg-3">비밀번호 확인 *</label>
                 <div class="col-lg-9">
                   <input type="password" name="password_confirm" placeholder="비밀번호 확인" class="form-control input-sm" required />
                 </div>
               </div>
               <hr />
               <div class="form-group">
-                <label class="control-label col-lg-3">이름(입금자명)</label>
+                <label class="control-label col-lg-3">이름(입금자명) *</label>
                 <div class="col-lg-9">
                   <input type="text" name="name" placeholder="이름(입금자명)" class="form-control input-sm" required />
                 </div>
               </div>
               <div class="form-group">
-                <label class="control-label col-lg-3">수령 방법</label>
+                <label class="control-label col-lg-3">수령 방법 *</label>
                 <div class="col-lg-9">
                   <label class="radio-inline">
                     <input type="radio" name="receive" value="BY_SELF" onchange="onChangeRadio(this)" checked /> 직접수령
@@ -223,12 +197,12 @@
                 </div>
               </div>
               <div class="form-group form_address">
-                <label class="control-label col-lg-3 col-xs-12">주소</label>
+                <label class="control-label col-lg-4 col-xs-12">주소</label>
                 <div class="col-lg-4 col-xs-6">
                   <input type="number" name="zipcode" placeholder="우편번호" class="form-control input-sm" readonly />
                 </div>
-                <div class="col-lg-3 col-xs-6">
-                  <button id="btnSearchAddress" type="button" class="btn btn-default btn-sm btn-block" onclick="showAddress()">주소검색</button>
+                <div class="col-lg-4 col-xs-6">
+                  <button id="btnSearchAddress" type="button" class="btn btn-default btn-sm btn-block" onclick="showAddress()" disabled>주소검색</button>
                 </div>
               </div>
               <div class="form-group">
@@ -259,21 +233,16 @@
                 </div>
               </div>
             </div>
-
-            <div class="row text-center">
-               <p class="account"><strong> [ 계좌번호 : 201502-04-216228 국민은행 여민수 ]</strong><p>
-            </div>
-
             <div class="panel-footer text-right">
-              <button type="reset" class="btn btn-default">다시 작</button>
-              <button type="submit" class="btn btn-primary" onclick="formSubmit()">예약완료</button>
+              <button type="reset" class="btn btn-default">다시 작성</button>
+              <button id="btnFormSubmit" type="submit" class="btn btn-primary" data-loading-text="Loading..." onclick="formSubmit(this)">예약완료</button>
             </div>
           </form>
         </div>
       </div>
     </div>
-    <footer class="footer">
-      <p>&copy; <a href="mailto:zzyeo@naver.com">zzyeo@naver.com</a> </p>
+    <footer class="footer text-center">
+      <p>&copy; ming (<a href="mailto:zzyeo@naver.com">zzyeo@naver.com</a>)</p>
     </footer>
   </div> <!-- /container -->
 

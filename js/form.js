@@ -1,4 +1,33 @@
+function signIn() {
+  var phone = document.form_signin.phone.value.trim();
+  var email = 'user'+ phone +'@redfactory.net';
+  var password = document.form_signin.password.value;
+
+  firebase.auth()
+  .signInWithEmailAndPassword(email, password)
+  .then(goResult)
+  .catch(function(error) {
+    // Handle Errors here.
+    var errorCode = error.code;
+    var errorMessage = error.message;
+    // [START_EXCLUDE]
+    if (errorCode === 'auth/wrong-password') {
+      alert('잘못된 비밀번호 입니다.');
+    } else {
+      alert(errorMessage);
+    }
+    console.log(error);
+    // [END_EXCLUDE]
+  });
+}
+
+function signOut() {
+  firebase.auth().signOut();
+  goIndex();
+}
+
 function getTotalCost() {
+  var receive = document.form_info.receive.value;
   var total = 0;
   var str = '';
   for (var type in PRODUCT_CONFIG) {
@@ -9,10 +38,10 @@ function getTotalCost() {
     total += cost * count;
   }
   str = '총합: '+ numberFormatter(total) +'원';
-  if (total < DO_NOT_NEED_DELIVERY_FEE) {
+  if (total < DO_NOT_NEED_DELIVERY_FEE && receive !== 'BY_SELF') {
     str += ' + 배송비('+ numberFormatter(DELIVERY_FEE) +'원)';
+    str += ' = '+ numberFormatter(total + DELIVERY_FEE) +'원';
   }
-  str += ' = '+ numberFormatter(total + DELIVERY_FEE) +'원';
   document.form_info.total.value = total;
   document.getElementById('TotalCost').innerHTML = str;
 }
@@ -38,37 +67,37 @@ function formValidate() {
   var phone = document.form_info.phone.value.trim();
   if (phone.length === 0) {
     document.form_info.phone.focus();
-    alert('Please enter a phone number.');
+    alert('핸드폰번호를 입력해주세요.');
     return false;
   } else if (phone.length < 10 || phone.length > 12) {
     document.form_info.phone.focus();
-    alert('Please enter a valid phone number.');
+    alert('유효한 핸드폰번호를 입력해주세요.');
     return false;
   }
   var password = document.form_info.password.value.trim();
   if (password.length === 0) {
     document.form_info.password.focus();
-    alert('Please enter a password.');
+    alert('비밀번호를 입력해주세요.');
     return false;
   } else if (password.length < 6) {
     document.form_info.password.focus();
-    alert('Enter Password at least six words.');
+    alert('비밀번호는 최소 6자이상 입력해주세요.');
     return false;
   }
   var passwordConfirm = document.form_info.password_confirm.value.trim();
   if (password.length === 0) {
     document.form_info.password_confirm.focus();
-    alert('Please enter a password confirm.');
+    alert('비밀번호 확인을 입력해주세요.');
     return false;
   } else if (password !== passwordConfirm) {
     document.form_info.password_confirm.focus();
-    alert('Password and Password Confirm is different.');
+    alert('비밀번호와 비밀번호 확인이 맞지 않습니다.');
     return false;
   }
   var name = document.form_info.name.value.trim();
   if (name.length === 0) {
     document.form_info.name.focus();
-    alert('Please enter a name.');
+    alert('이름(입금자명)을 입력해주세요.');
     return false;
   }
   var receive = document.form_info.receive.value.trim();
@@ -76,7 +105,7 @@ function formValidate() {
     // need zipcode
     var zipcode = document.form_info.zipcode.value.trim();
     if (zipcode.length === 0) {
-      alert('Please enter a address and zipcode.');
+      alert('주소를 입력해주세요.');
       return false;
     }
   }
@@ -89,13 +118,14 @@ function formValidate() {
     totalProductCount += count;
   }
   if (totalProductCount == 0) {
-    alert('Please enter a number of count.');
+    alert('주문 내역을 입력해주세요.');
     return false;
   }
   return true;
 }
 
-function formSubmit() {
+function formSubmit(self) {
+  $(self).button('loading');
   var isValid = formValidate();
   if (isValid) {
     var email = getEmail();
@@ -106,8 +136,14 @@ function formSubmit() {
     firebase.auth()
       .createUserWithEmailAndPassword(email, password)
       .then(formPostData)
+      .then(function() {
+        alert('주문이 완료되었습니다.');
+        goResult();
+      })
       .catch(errorHandler);
     // [END createwithemail]
+  } else {
+    $(self).button('reset');
   }
 }
 
@@ -121,6 +157,7 @@ function formPostData() {
   var zipcode = document.form_info.zipcode.value.trim();
   var note = document.form_info.note.value.trim();
   var total = document.form_info.total.value.trim();
+  var createdAt = new Date();
 
   var postData = {
     uid: uid,
@@ -131,7 +168,9 @@ function formPostData() {
     address2: address2,
     zipcode: zipcode, 
     note: note,
-    total: total
+    total: total,
+    create_at: createdAt,
+    status: 'SUBMITTED'
   };
 
   for (var type in PRODUCT_CONFIG) {
@@ -153,46 +192,18 @@ function formPostData() {
 }
 
 function showAddress() {
-  console.log('showAddress');
   new daum.Postcode({
     oncomplete: function(data) {
       // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분입니다.
       // 예제를 참고하여 다양한 활용법을 확인해 보세요.
-      console.log(data);
-
-      // 팝업에서 검색결과 항목을 클릭했을때 실행할 코드를 작성하는 부분.
-
-      // 도로명 주소의 노출 규칙에 따라 주소를 조합한다.
-      // 내려오는 변수가 값이 없는 경우엔 공백('')값을 가지므로, 이를 참고하여 분기 한다.
-      var fullRoadAddr = data.roadAddress; // 도로명 주소 변수
-      var extraRoadAddr = ''; // 도로명 조합형 주소 변수
-
-      // 법정동명이 있을 경우 추가한다. (법정리는 제외)
-      // 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
-      if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
-          extraRoadAddr += data.bname;
-      }
-      // 건물명이 있고, 공동주택일 경우 추가한다.
-      if(data.buildingName !== '' && data.apartment === 'Y'){
-         extraRoadAddr += (extraRoadAddr !== '' ? ', ' + data.buildingName : data.buildingName);
-      }
-      // 도로명, 지번 조합형 주소가 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
-      if(extraRoadAddr !== ''){
-          extraRoadAddr = ' (' + extraRoadAddr + ')';
-      }
-      // 도로명, 지번 주소의 유무에 따라 해당 조합형 주소를 추가한다.
-      if(fullRoadAddr !== ''){
-          fullRoadAddr += extraRoadAddr;
-      }
-
       // 우편번호와 주소 정보를 해당 필드에 넣는다.
+      var address = data.address || data.roadAddress || data.jibunAddress;
+      if (data.buildingName) {
+        address += ' ('+ data.buildingName +')';
+      }
       var form = document.form_info;
       form.zipcode.value = data.zonecode;
-      form.address1.value = data.zonecode;
-      
-      // document.getElementById('sample4_postcode').value = data.zonecode; //5자리 새우편번호 사용
-      // document.getElementById('sample4_roadAddress').value = fullRoadAddr;
-      // document.getElementById('sample4_jibunAddress').value = data.jibunAddress;
+      form.address1.value = address;
     }
   }).open();
 }
@@ -211,19 +222,21 @@ function onChangeRadio(self) {
 
   var buttonSelectAddress = document.getElementById('btnSearchAddress');
   buttonSelectAddress.disabled = disabled;
+  getTotalCost();
 }
 
 function errorHandler(error) {
+  $('#btnFormSubmit').button('reset');
   // Handle Errors here.
   var errorCode = error.code;
   var errorMessage = error.message;
   // [START_EXCLUDE]
   switch (errorCode) {
     case 'auth/email-already-in-use':
-      alert('The phone number is already in use by another account.');
+      alert('이미 등록된 핸드폰번호입니다.');
       break;
     case 'auth/weak-password':
-      alert('The password is too weak.');
+      alert('비밀번호는 최소 6자이상 입력해주세요.');
       break;
     default:
       alert(errorMessage);
