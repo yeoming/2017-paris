@@ -71,11 +71,19 @@ var RECEIVE_FIELD = {
 var PRODUCT_CONFIG = {
   desk: {
     label: '탁상용',
-    cost: 12000,
+    cost: 10000,
   },
   wall: {
     label: '벽걸이',
-    cost: 15000,
+    cost: 20000,
+  },
+  postcard_single: {
+    label: '엽서(1set)',
+    cost: 10000,
+  },
+  postcard_set: {
+    label: '엽서(풀셋)',
+    cost: 25000,
   },
 };
 
