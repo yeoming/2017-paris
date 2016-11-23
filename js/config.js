@@ -77,6 +77,14 @@ var PRODUCT_CONFIG = {
     label: '벽걸이',
     cost: 15000,
   },
+  postcard_single: {
+    label: '엽서(1set)',
+    cost: 10000,
+  },
+  postcard_set: {
+    label: '엽서(풀셋)',
+    cost: 25000,
+  }
 };
 
 var DELIVERY_FEE = 3000;
