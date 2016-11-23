@@ -22,7 +22,7 @@ function initApp() {
     // [START_EXCLUDE silent]
     // [END_EXCLUDE]
     if (user) {
-      goResult();
+      // goResult();
       // window.user = user;
     } else {
       goIndex();
